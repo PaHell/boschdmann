@@ -10,7 +10,7 @@ let corsOptions = {
 
 app.use(cors(corsOptions))
 
-app.use("/api/v1", router)
+app.use("/api", router)
 
 app.listen(port, () => {
     console.log(`server listening on port ${port}`)
