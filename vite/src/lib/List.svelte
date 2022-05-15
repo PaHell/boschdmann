@@ -1,12 +1,20 @@
 <script context="module" lang="ts">
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
+	import { createEventDispatcher } from 'svelte';
 </script>
 
 <script lang="ts">
 	export let title = '';
 	export let items: any[] = [];
 	export let active = -1;
+
+	const dispatch = createEventDispatcher<{change: number}>();
+
+	function setActive(index: number) {
+		active = index;
+		dispatch("change", active);
+	}
 </script>
 
 <template>
@@ -18,10 +26,12 @@
 		</header>
 		<main>
 			<div class="indicator">
-				<div style="margin-top: {active * 2.5 + 0.375}rem;"></div>
+				<div style="margin-top: {active * 2.5}rem;">
+					<Icon name="arrow-drop-right-fill"/>
+				</div>
 			</div>
 			{#each items as item, index}
-				<Button variant="trans" active={index == active} on:click={() => (active = index)}>
+				<Button variant="trans" active={index == active} on:click={() => setActive(index)}>
 					<slot {item} {index} />
 				</Button>
 			{/each}
@@ -73,12 +83,16 @@
 				}
 			}
 			& > .indicator {
-				@apply flex justify-end mr-[-4px];
+				@apply flex justify-end mr-[-12px];
 				& > div {
-					@apply w-[7px] h-7 absolute
+					@apply w-[24px] h-[24px] absolute
 					border border-gray-300
 					bg-white shadow rounded-full
 					transition-[margin] duration-300;
+					transform: translateY(calc((2.5rem - 24px) / 2));
+					& > .icon > i {
+						@apply indent-px text-gray-500;
+					}
 				}
 			}
 		}

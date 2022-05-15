@@ -6,10 +6,12 @@
 	import Icon from './lib/Icon.svelte';
   	import RequestView from './lib/RequestView.svelte';
 	import { RequestContentTypes, RequestCredentials, RequestMethods, RequestModes } from './enum';
+import { onMount } from 'svelte';
 </script>
 
 <script lang="ts">
-	let active = 1;
+	let selectedRequest : App.Request | undefined;
+	let selectedRequestIndex = -1;
 	let requests: App.Request[] = [
 		{
 			name: 'Opaque Response',
@@ -113,6 +115,28 @@
 			ContentType: RequestContentTypes.JSON
 		}
 	];
+
+	onMount(() => {
+		selectedRequestIndex = 0;
+		selectedRequest = requests[selectedRequestIndex];
+	});
+
+	function onRequestViewChange(e : CustomEvent<number>) {
+		selectedRequest = undefined;
+		setTimeout(() => {
+			selectedRequest = requests[e.detail];
+		});
+	}
+
+	function saveRequest() {
+		console.log({saveRequest});
+	}
+
+	function removeRequest() {
+		console.log({removeRequest});
+		requests.splice(selectedRequestIndex, 1);
+		requests = requests;
+	}
 </script>
 
 <svelte:head>
@@ -133,7 +157,7 @@
 	</header>
 	<div id="content">
 		<nav>
-			<List title="My Collection" items={requests} bind:active>
+			<List title="My Collection" items={requests} bind:active={selectedRequestIndex} on:change={onRequestViewChange}>
 				<svelte:fragment let:item let:index>
 					<div class="badge badge-{item.method.toLowerCase()}">
 						<p>{item.method}</p>
@@ -143,7 +167,11 @@
 			</List>
 		</nav>
 		<main>
-			<RequestView request={requests[active]} />
+			{#if selectedRequest}
+				<RequestView bind:request={selectedRequest} on:remove={removeRequest} on:save={saveRequest} />
+			{:else}
+				<p>Loading...</p>
+			{/if}
 		</main>
 	</div>
 	<footer>

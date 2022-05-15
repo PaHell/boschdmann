@@ -5,6 +5,7 @@
 	import Icon from "./Icon.svelte";
 	import Select from "./Select.svelte";
 	import JsonView from "./JsonView.svelte";
+import { createEventDispatcher, SvelteComponent } from 'svelte';
 </script>
 
 <script lang="ts">
@@ -14,7 +15,10 @@
 	let error: any;
 	let showResponse = false;
 	let parsedUrl = "";
+
+	const dispatch = createEventDispatcher<{remove: void, save: void}>();
 	
+	let refNameInput : SvelteComponent;
 
 	function download() {
 		if (!data) return;
@@ -29,6 +33,14 @@
 		const str = JSON.stringify(data, null, 4)
 			.replace(/"([^"]+)":/g, '$1:');
 		navigator.clipboard.writeText('\nconst data = ' + str + ';\n');
+	}
+
+	function remove() {
+		dispatch("remove");
+	}
+
+	function save() {
+		dispatch("save");
 	}
 
 	$: {
@@ -99,14 +111,16 @@
 <template>
 	<div class="request-view">
 		{#if request}
-			<div class="request-name">
-				<h3>{request.name}</h3>
-				<Button icon="pencil-fill" variant="trans" />
-				<Button icon="delete-bin-7-line" variant="sec" />
-				<Button icon="save-line" text="Save" variant="pri" />
+			<div class="flex space-x-4 items-end">
+				<div class="flex-1">
+					<Input focusOnMount bind:this={refNameInput} placeholder="Get Users" large bind:value={request.name}/>
+				</div>
+				<Button on:click={remove} icon="delete-bin-7-line" variant="sec" />
+				<Button on:click={save} icon="save-line" text="Save" variant="pri" />
 			</div>
 			<div class="request-general">
-				<Input label="Wildcard URL" placeholder="https://example.org/model/[:id]" bind:value={request.url}/>
+				<p class="label">Wildcard URL</p>
+				<Input placeholder="https://example.org/model/[:id]" bind:value={request.url}/>
 				<div class="request-config">
 					<Select items={Object.values(RequestMethods)} bind:value={request.method}>
 						<svelte:fragment slot="selected" let:item>
@@ -219,7 +233,7 @@
 		}
 
 		& > .request-general {
-			@apply space-y-4 pt-4;
+			@apply space-y-4;
 			& > .request-config {
 				@apply grid grid-cols-2 gap-4;
 			}

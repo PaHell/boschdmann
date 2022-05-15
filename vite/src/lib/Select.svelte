@@ -27,6 +27,7 @@
                             active={valueProp ? value[valueProp] === item[valueProp] : value === item}
                             on:click={() => { value = item; opened = false; }}>
                             <slot name="item" {item}/>
+                            <Icon name="check-line"/>
                         </Btn>
                     {/each}
                 </div>
@@ -53,9 +54,7 @@
             @apply h-0 relative;
             
             & > div {
-                @apply max-h-0 overflow-hidden
-                p-[4px] m-[-4px];
-                margin-top: calc(-2px);
+                @apply max-h-0 overflow-hidden;
                 transition: max-height .3s ease-in-out;
                 will-change: max-height;
     
@@ -66,20 +65,35 @@
     
                     & .button {
                         @apply flex-shrink-0 
+                        w-full
                         rounded-none border-none;
+
+                        & > .icon:last-child {
+                            @apply hidden;
+                        }
+
+                        &:hover,
+                        &:focus {
+                            @apply bg-gray-100;
+                        }
+                        &:active {
+                            @apply bg-gray-200;
+                        }
     
                         &.active {
-                            &:before {
-                                content: "";
-                                @apply block absolute h-5 w-[2px] rounded-full;
+                            & > p {
+                                @apply text-accent-700;
+                            }
+                            & > .icon:last-child {
+                                @apply block text-accent-500;
                             }
                         }
                     }
-                }
     
+                }
             }
             &.open > div {
-                @apply max-h-96;
+                @apply max-h-96 p-[4px] m-[-4px] mt-[-2.5px];
             }
         }
 	}
