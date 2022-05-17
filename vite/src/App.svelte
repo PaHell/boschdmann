@@ -1,122 +1,21 @@
 <script context="module" lang="ts">
+	import { onMount } from 'svelte';
+	import { RequestContentTypes, RequestCredentials, RequestMethods, RequestModes } from './enum';
   	import './assets/app.css';
-  	import 'remixicon/fonts/remixicon.css'
+  	//import 'remixicon/fonts/remixicon.css'
 	import Button from './lib/Button.svelte';
 	import List from './lib/List.svelte';
 	import Icon from './lib/Icon.svelte';
   	import RequestView from './lib/RequestView.svelte';
-	import { RequestContentTypes, RequestCredentials, RequestMethods, RequestModes } from './enum';
-import { onMount } from 'svelte';
 </script>
 
 <script lang="ts">
 	let selectedRequest : App.Request | undefined;
 	let selectedRequestIndex = -1;
-	let requests: App.Request[] = [
-		{
-			name: 'Opaque Response',
-			url: 'https://jsonplaceholder.typicode.com/posts',
-			routeParam: {},
-			queryParam: {},
-			bodyParam: {}, 
-			method: RequestMethods.GET,
-			mode: RequestModes.NO_CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		},
-		{
-			name: 'Index Posts',
-			url: 'https://jsonplaceholder.typicode.com/posts',
-			routeParam: {},
-			queryParam: {},
-			bodyParam: {},
-			method: RequestMethods.GET,
-			mode: RequestModes.CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		},
-		{
-			name: 'Get Post (Route)',
-			url: 'https://jsonplaceholder.typicode.com/posts/[:id]',
-			routeParam: {
-				id: 1
-			},
-			queryParam: {},
-			bodyParam: {},
-			method: RequestMethods.GET,
-			mode: RequestModes.CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		},
-		{
-			name: 'Get Comment (Query)',
-			url: 'https://jsonplaceholder.typicode.com/comments',
-			routeParam: {},
-			queryParam: {
-				postId: 1
-			},
-			bodyParam: {},
-			method: RequestMethods.POST,
-			mode: RequestModes.CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		},
-		{
-			name: 'Request Put',
-			url: 'http://bosch.de',
-			routeParam: {},
-			queryParam: {},
-			bodyParam: {
-				user: {
-					id: 1,
-					name: "Name",
-					password: "Password",
-					parent: undefined, 
-					group: null, 
-				},
-				claims: [
-					"lorem",
-					"ipsum",
-					NaN,
-					Infinity
-				]
-			},
-			method: RequestMethods.PUT,
-			mode: RequestModes.NO_CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		},
-		{
-			name: 'Request Patch',
-			url: 'http://bosch.de',
-			routeParam: {},
-			queryParam: {},
-			bodyParam: {
-				user: 'user',
-				password: 'password'
-			},
-			method: RequestMethods.PATCH,
-			mode: RequestModes.NO_CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		},
-		{
-			name: 'Request Delete',
-			url: 'http://bosch.de',
-			routeParam: {},
-			queryParam: {},
-			bodyParam: {
-				user: 'user',
-				password: 'password'
-			},
-			method: RequestMethods.DELETE,
-			mode: RequestModes.NO_CORS,
-			credentials: RequestCredentials.INCLUDE,
-			ContentType: RequestContentTypes.JSON
-		}
-	];
+	let requests: (App.Request | null)[] = [];
 
 	onMount(() => {
+		requests = getSavedRequests();
 		selectedRequestIndex = 0;
 		selectedRequest = requests[selectedRequestIndex];
 	});
@@ -128,14 +27,58 @@ import { onMount } from 'svelte';
 		});
 	}
 
-	function saveRequest() {
-		console.log({saveRequest});
+	function createRequest() {
+		// add item and change selected
+		selectedRequestIndex = requests.push({
+			name: "",
+			url: "https://",
+			routeParam: {},
+			queryParam: {},
+			bodyParam: {},
+			method: RequestMethods.GET,
+			mode: RequestModes.CORS,
+			credentials: RequestCredentials.INCLUDE,
+			contentType: RequestContentTypes.JSON,
+		}) - 1;
+		// so ui notices push
+		requests = requests;
+		// change view
+		selectedRequest = requests[selectedRequestIndex];
 	}
 
-	function removeRequest() {
-		console.log({removeRequest});
-		requests.splice(selectedRequestIndex, 1);
+	function getSavedRequests() : (App.Request|null)[] {
+		let storage : string | null = localStorage.getItem("requests");
+		if (storage == null) return [];
+		const parsed = JSON.parse(storage);
+		// check for array, so template doesn't break to hard if value has been manipulated
+		if (Array.isArray(parsed)) return parsed; 
+		return [];
+	}
+
+	function saveRequest(e : CustomEvent<App.Request>) {
+		// get new, to keep other changes out
+		const storage = getSavedRequests();
+		// overwrite index
+		storage[selectedRequestIndex] = e.detail;
+		requests[selectedRequestIndex] = storage[selectedRequestIndex];
 		requests = requests;
+		// save whole list
+		localStorage.setItem("requests", JSON.stringify(storage, null, 4));
+	}
+	
+	function removeRequest() {
+		// get new, to keep other changes out
+		const storage = getSavedRequests();
+		// null index
+		storage[selectedRequestIndex] = null;
+		requests[selectedRequestIndex] = null;
+		// view first item
+		const firstNotNull = requests.findIndex(i => i !== null);
+		selectedRequestIndex = firstNotNull;
+		selectedRequest = requests[firstNotNull];
+		requests = requests;
+		// save whole list
+		localStorage.setItem("requests", JSON.stringify(storage, null, 4));
 	}
 </script>
 
@@ -145,30 +88,38 @@ import { onMount } from 'svelte';
 </svelte:head>
 
 <template>
-	<header>
-		<div>
-			<!--
-				<img src="#" alt="Boschdmann Logo" />
-			-->
-			<Icon name="mail-send-fill"/>
-			<h1>Boschdmann</h1>
-		</div>
-		<Button icon="settings-line" text="Settings" />
-	</header>
 	<div id="content">
 		<nav>
-			<List title="My Collection" items={requests} bind:active={selectedRequestIndex} on:change={onRequestViewChange}>
+			<header>
+				<Icon name="mail-send-fill"/>
+				<h1>Boschdmann</h1>
+			</header>
+			<List title="My Collection" items={requests} bind:active={selectedRequestIndex} on:change={onRequestViewChange} on:add={createRequest}>
 				<svelte:fragment let:item let:index>
 					<div class="badge badge-{item.method.toLowerCase()}">
 						<p>{item.method}</p>
 					</div>
-					<p>{item.name}</p>
+					<p>
+						{item.name}
+						{#if !item.name}
+							<span class="italic">Untitled Request</span>
+						{/if}
+					</p>
 				</svelte:fragment>
+				<div slot="empty" class="empty">
+					<Icon name="mail-close-line"/>
+					<p>No Requests</p>
+				</div>
 			</List>
 		</nav>
 		<main>
-			{#if selectedRequest}
-				<RequestView bind:request={selectedRequest} on:remove={removeRequest} on:save={saveRequest} />
+			{#if requests.filter(i => i !== null).length === 0}
+				<div class="empty h-full">
+					<Icon large name="list-check-2"/>
+					<h1>Nothing Selected</h1>
+				</div>
+			{:else if selectedRequest}
+				<RequestView request={selectedRequest} on:remove={removeRequest} on:save={saveRequest} />
 			{:else}
 				<p>Loading...</p>
 			{/if}
@@ -176,8 +127,8 @@ import { onMount } from 'svelte';
 	</div>
 	<footer>
 		<p>&copy; 2018 Deutsche Boschd</p>
-		<a href="#">Documentation</a>
-		<a href="#">GitHub</a>
+		<a href="https://github.com/PaHell/boschdmann/tree/master/doc/final.pdf" title="Open Documentation in GitHub" target="_BLANK">Documentation</a>
+		<a href="https://github.com/PaHell/boschdmann" title="Open GitHub Repo in new Tab" target="_BLANK">GitHub</a>
 	</footer>
 </template>
 
@@ -221,43 +172,49 @@ import { onMount } from 'svelte';
 		}
 	}
 
+	.empty {
+		@apply flex justify-center items-center
+		p-4;
+		& > .icon {
+			@apply mr-4 text-gray-400;
+		}
+		& > p {
+			@apply text-lg text-gray-400;
+		}
+		& > h1 {
+			@apply text-3xl text-gray-400;
+		}
+	}
+
 	#app {
 		@apply flex flex-col justify-center;
-
-		& > header {
-			@apply h-16 pr-4
-			flex items-center
-			bg-white shadow;
-
-			& > div {
-				@apply w-80 h-full mr-auto
-				flex justify-center items-center
-				border-r border-accent-500
-				bg-accent-400;
-
-				& > img {
-					@apply overflow-hidden
-					w-9 h-9 mr-2;
-				}
-
-				& > .icon {
-					@apply w-9 h-9 mr-2 text-black;
-				}
-
-				& > h1 {
-					@apply text-xl font-medium;
-				}
-			}
-		}
-
+		
 		& > #content {
 			@apply flex-1 flex overflow-hidden;
-
+			
 			& > nav {
-				@apply w-80
-				border-t border-t-accent-500
-				border-r border-r-gray-300
-				overflow-y-auto overflow-x-hidden;
+				@apply w-80 border-r border-r-gray-300;
+
+				& > header {
+					@apply flex justify-center items-center
+					border-r border-accent-500
+					bg-accent-400
+					mr-[-1px] pr-[1px];
+					height: calc(5.25rem + 3px);
+		
+					& > img {
+						@apply overflow-hidden
+						w-9 h-9 mr-2;
+					}
+		
+					& > .icon {
+						@apply w-9 h-9 mr-2 text-black;
+					}
+		
+					& > h1 {
+						@apply text-xl font-medium;
+					}
+				}
 
 				& > .list {
 					@apply h-full;

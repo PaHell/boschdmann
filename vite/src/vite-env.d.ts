@@ -23,6 +23,10 @@ declare namespace App {
         method: RequestMethods;
         mode: RequestModes;
         credentials: RequestCredentials;
-        ContentType: RequestContentTypes;
+        contentType: RequestContentTypes;
     };
+}
+
+declare module '*.svelte' {
+    export { SvelteComponentDev as default } from 'svelte/internal';
 }

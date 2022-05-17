@@ -1,11 +1,11 @@
 <script context="module" lang="ts">
+	import { createEventDispatcher, SvelteComponent } from 'svelte';
 	import { RequestContentTypes, RequestCredentials, RequestMethods, RequestModes } from '../enum';
 	import Button from './Button.svelte';
 	import Input from './Input.svelte';
 	import Icon from "./Icon.svelte";
 	import Select from "./Select.svelte";
 	import JsonView from "./JsonView.svelte";
-import { createEventDispatcher, SvelteComponent } from 'svelte';
 </script>
 
 <script lang="ts">
@@ -16,9 +16,13 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 	let showResponse = false;
 	let parsedUrl = "";
 
-	const dispatch = createEventDispatcher<{remove: void, save: void}>();
+	const dispatch = createEventDispatcher<{remove: void, save: App.Request}>();
 	
 	let refNameInput : SvelteComponent;
+
+	export function focus() {
+		refNameInput.focus();
+	}
 
 	function download() {
 		if (!data) return;
@@ -40,7 +44,7 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 	}
 
 	function save() {
-		dispatch("save");
+		dispatch("save", request);
 	}
 
 	$: {
@@ -60,7 +64,8 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 		// add query params
 		if (Object.keys(request.queryParam).length) {
 			let query = Object.entries(request.queryParam).map(i => `${i[0]}=${i[1]}`);
-			parsedUrl = url + '?' + query;
+			url += url.slice(-1) === '/' ? '?' : '/?'
+			parsedUrl = url + query;
 		}
 		parsedUrl = url;
 	}
@@ -72,7 +77,7 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 			cache: 'no-cache',
 			credentials: request.credentials,
 			headers: {
-				'Content-Type': request.ContentType
+				'Content-Type': request.contentType
 			},
 			redirect: 'follow', // manual, *follow, error
 			referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
@@ -84,15 +89,8 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 			.then((r => {
 				response = r;
 				console.log({response});
-				let parsed : any;
-				try {
-					parsed = r.json();
-				} catch (e) {
-					error = response.type;
-					console.log({e});
-				}
 				//if (r.headers['Content-Type'] == RequestContentTypes.JSON) return r.json(); 
-				return parsed;
+				return r.json();
 			}))
 			.then((d => {
 				data = d;
@@ -138,7 +136,7 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 							<p>{item}</p>
 						</svelte:fragment>
 					</Select>
-					<Select items={Object.values(RequestContentTypes)} bind:value={request.ContentType}>
+					<Select items={Object.values(RequestContentTypes)} bind:value={request.contentType}>
 						<svelte:fragment slot="selected" let:item>
 							<p>{item}</p>
 						</svelte:fragment>					
@@ -182,16 +180,23 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 			{#if (showResponse)}
 				<div class="overflow-hidden">
 					<p class="label">Response</p>
+					<p class="label">{response?.status}</p>
+					<p class="label">{response?.statusText}</p>
+					<p class="label">{response?.type}</p>
+					<p class="label">{response?.url}</p>
+					<p class="label">{JSON.stringify(response?.headers)}</p>
 					<JsonView data={response}/>
-					<p class="label">data</p>
+					<p class="label">Data</p>
 					<JsonView data={data}/>
-					<p class="label">Error</p>
-					<JsonView data={error}/>
+					{#if error}
+						<p class="label">Error</p>
+						<JsonView data={error}/>
+					{/if}
 				</div>
 				<div class="flex space-x-4 justify-center items-center">
 					<p class="label">Export</p>
 					<Button on:click={download} icon="download-line" text="Download .json" variant="sec" />
-					<Button on:click={toClipboard} icon="clipboard-line" text="Copy JS" variant="sec" />
+					<Button on:click={toClipboard} icon="clipboard-line" text="Copy Javascript" variant="sec" />
 				</div>
 			{/if}
 		{:else}
@@ -233,7 +238,7 @@ import { createEventDispatcher, SvelteComponent } from 'svelte';
 		}
 
 		& > .request-general {
-			@apply space-y-4;
+			@apply space-y-4 border-dashed;
 			& > .request-config {
 				@apply grid grid-cols-2 gap-4;
 			}

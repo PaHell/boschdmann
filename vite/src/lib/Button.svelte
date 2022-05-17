@@ -43,6 +43,10 @@
 			overflow-ellipsis whitespace-nowrap overflow-hidden
 			text-left;
 
+			& > span {
+				@apply text-gray-600;
+			}
+
 			&:last-child:not(:first-child) {
 				@apply pr-3;
 			}

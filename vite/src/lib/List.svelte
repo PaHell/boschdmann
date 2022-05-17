@@ -9,11 +9,25 @@
 	export let items: any[] = [];
 	export let active = -1;
 
-	const dispatch = createEventDispatcher<{change: number}>();
+	let withoutNullActive = -1;
+
+	$: {
+		let nulls = 0;
+		for (let i = 0; i <= active; i++) {
+			if (items[i] === null) nulls++;
+		}
+		withoutNullActive = active - nulls;
+	}
+
+	const dispatch = createEventDispatcher<{change: number, add: void}>();
 
 	function setActive(index: number) {
 		active = index;
 		dispatch("change", active);
+	}
+
+	function add() {
+		dispatch("add");
 	}
 </script>
 
@@ -22,19 +36,25 @@
 		<header>
 			<h3>{title}</h3>
 			<Button icon="search-line" variant="sec" />
-			<Button icon="add-line" variant="pri" />
+			<Button icon="add-line" variant="pri" on:click={add} />
 		</header>
 		<main>
-			<div class="indicator">
-				<div style="margin-top: {active * 2.5}rem;">
-					<Icon name="arrow-drop-right-fill"/>
+			{#if items.filter(i => i !== null).length !== 0}
+				<div class="indicator">
+					<div style="margin-top: {withoutNullActive * 2.5}rem;">
+						<Icon name="arrow-drop-right-fill"/>
+					</div>
 				</div>
-			</div>
-			{#each items as item, index}
-				<Button variant="trans" active={index == active} on:click={() => setActive(index)}>
-					<slot {item} {index} />
-				</Button>
-			{/each}
+				{#each items as item, index}
+					{#if item}
+						<Button variant="trans" active={index == active} on:click={() => setActive(index)}>
+							<slot {item} {index} />
+						</Button>
+					{/if}
+				{/each}
+			{:else}
+				<slot name="empty"/>
+			{/if}
 		</main>
 	</div>
 </template>

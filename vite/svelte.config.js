@@ -13,8 +13,11 @@ export default {
 		sourceMap: !production,
 		postcss: {
 			plugins: [postCssNesting, tailwindCss, autoprefixer]
-		}
+		},
 	}),
+  condig: {
+
+  },
   adapter: adapter({
     // default options are shown
     pages: 'build',
