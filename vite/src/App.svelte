@@ -126,7 +126,6 @@
 	</div>
 	<footer>
 		<p>&copy; 2018 Deutsche Boschd</p>
-		<a href="https://github.com/PaHell/boschdmann/tree/master/doc/final.pdf" title="Open Documentation in GitHub" target="_BLANK">Documentation</a>
 		<a href="https://github.com/PaHell/boschdmann" title="Open GitHub Repo in new Tab" target="_BLANK">GitHub</a>
 	</footer>
 </template>

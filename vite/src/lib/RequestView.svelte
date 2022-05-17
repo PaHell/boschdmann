@@ -207,7 +207,7 @@ import ArrayExport from "./ArrayExport.svelte";
 				{#if data}
 					<div class="flex space-x-4 justify-center items-center">
 						<p class="label">Export</p>
-						<Button on:click={download} icon="download-line" text="Download .json" variant="sec" />
+						<Button on:click={download} icon="download-line" text="Download All" variant="sec" />
 						<Button on:click={toClipboard} icon="clipboard-line" text="Copy Javascript" variant="sec" />
 					</div>
 				{/if}
