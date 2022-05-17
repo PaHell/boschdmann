@@ -6,13 +6,13 @@ if (localStorage.getItem("initialized") == null
     localStorage.setItem("requests", JSON.stringify([
       {
         name: "Get Users (Aufgabe)",
-        url: "https://",
+        url: "http://localhost:4269/api/users",
         routeParam: {},
         queryParam: {},
         bodyParam: {},
         method: RequestMethods.GET,
         mode: RequestModes.CORS,
-        credentials: RequestCredentials.INCLUDE,
+        credentials: RequestCredentials.OMIT,
         contentType: RequestContentTypes.JSON
       },
       {

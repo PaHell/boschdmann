@@ -13,7 +13,7 @@ export enum RequestModes {
 }
 
 export enum RequestContentTypes {
-    JSON = 'application/json',
+    JSON = 'application/json; charset=utf-8',
     TEXT = 'text/html; charset=UTF-8'
 }
 

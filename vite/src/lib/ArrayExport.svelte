@@ -62,12 +62,17 @@
             }
 
             & > .icon {
-                @apply text-gray-300 mr-2;
+                @apply flex-shrink-0 text-gray-300 mr-2;
             }
 
             &.selected > .icon {
                 @apply text-accent-700;
             }
+
+            & > .json-view {
+                @apply flex-1;
+            }
+
         }
 	}
 </style>

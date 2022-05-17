@@ -96,8 +96,7 @@
                     color: "gray-600",
                     breakAfter: true
                 });
-            const last = result[result.length - 2];
-            if (last.value === ']' || last.value === '}') last.value = '';
+            if (result[result.length - 2].value === ']' || result[result.length - 2].value === '}') result[result.length - 1].value = '';
             return result;
         }
 </script>
