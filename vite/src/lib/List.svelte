@@ -1,15 +1,23 @@
 <script context="module" lang="ts">
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, SvelteComponent } from 'svelte';
 </script>
 
 <script lang="ts">
+import Input from "./Input.svelte";
+
 	export let title = '';
 	export let items: any[] = [];
 	export let active = -1;
-
+	export let filter : (item: any) => string = (i) => i?.toString();  
+	
+	let searchInput = "";
+	let itemsVisible: boolean[] = [];
+	let showSearch = false;
 	let withoutNullActive = -1;
+
+	let refSearchInput : SvelteComponent;
 
 	$: {
 		let nulls = 0;
@@ -29,13 +37,43 @@
 	function add() {
 		dispatch("add");
 	}
+
+	function toggleSearch() {
+		showSearch = !showSearch;
+		// toggle (focus | clear) depending on state
+		if (showSearch) {
+			setTimeout(() => {
+				refSearchInput.focus();
+			}, 0);
+		} else {
+			searchInput = "";
+			itemsVisible.fill(true);
+		}
+	}
+
+	function search() {
+		console.log({search: searchInput});
+		// this could be better ...
+		const searchLower = searchInput.toLowerCase();
+		itemsVisible = items.reduce((acc, curr) => {
+			const itemString = filter(curr).toLowerCase();
+			console.log({curr, itemString, searchLower, visible: itemString.includes(searchLower)});
+			acc.push(itemString.includes(searchLower));
+			return acc;
+		}, []);
+		itemsVisible = itemsVisible;
+	}
 </script>
 
 <template>
 	<div class="list">
 		<header>
-			<h3>{title}</h3>
-			<Button icon="search-line" variant="sec" />
+			{#if showSearch}
+				<Input bind:this={refSearchInput} bind:value={searchInput} on:input={search} icon="search-line" placeholder="Search" />
+			{:else}
+				<h3>{title}</h3>
+			{/if}
+			<Button icon={showSearch ? "close-line" : "search-line"} variant="sec" on:click={toggleSearch} />
 			<Button icon="add-line" variant="pri" on:click={add} />
 		</header>
 		<main>
@@ -46,7 +84,7 @@
 					</div>
 				</div>
 				{#each items as item, index}
-					{#if item}
+					{#if item && (!showSearch || (showSearch && itemsVisible[index]))}
 						<Button variant="trans" active={index == active} on:click={() => setActive(index)}>
 							<slot {item} {index} />
 						</Button>
@@ -68,8 +106,12 @@
 			bg-white
 			border-b border-gray-300;
 
+			& > *:first-child {
+				@apply flex-1 mr-2 min-w-0;
+			}
+
 			& > h3 {
-				@apply text-lg flex-1;
+				@apply text-lg;
 			}
 
 			& > .button:not(:last-child) {

@@ -1,5 +1,5 @@
 <script lang="ts" context="module">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import Icon from './Icon.svelte';
 </script>
 
@@ -62,7 +62,7 @@
                 transition-all;
 
 			&.has-icon {
-				@apply pl-9;
+				@apply pl-10;
 			}
 
 			&:hover,
@@ -94,7 +94,7 @@
 			@apply pointer-events-none
 			flex justify-between items-center
             h-full -mt-10;
-			& > .app-icon {
+			& > .icon {
 				@apply text-gray-500 ml-2;
 			}
 			& > div {

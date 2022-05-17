@@ -38,20 +38,20 @@
                 };
         switch (typeof(value)) {
             case 'string':
-                console.log(' -> string');
+                //console.log(' -> string');
                 valueSymbol.value = `"${value}"`
                 valueSymbol.color ='orange-500';
                 break;
             case 'number':
-                console.log(' -> number');
+                //console.log(' -> number');
                 valueSymbol.color ='blue-500';
                 break;
             case 'boolean':
-                console.log(' -> boolean');
+                //console.log(' -> boolean');
                 valueSymbol.color ='green-500';
                 break;
             case 'undefined':
-                console.log(' -> undefined/null');
+                //console.log(' -> undefined/null');
                 valueSymbol.color ='purple-500';
                 break;
             }
@@ -61,7 +61,7 @@
             result.push(valueSymbol);
 
             if (Array.isArray(value)) {
-                console.log(' -> array', value.length);
+                //console.log(' -> array', value.length);
                 valueSymbol.breakAfter = true;
                 valueSymbol.value ='[';
                 valueSymbol.color ='gray-400';
@@ -76,7 +76,7 @@
                 });
             }
             else if (!!value && typeof(value) === 'object') {
-                console.log(' -> object', {entries : Object.entries(value)});
+                //console.log(' -> object', {entries : Object.entries(value)});
                 valueSymbol.breakAfter = true;
                 valueSymbol.value ='{';
                 valueSymbol.color ='gray-400';
@@ -97,7 +97,7 @@
                     breakAfter: true
                 });
             const last = result[result.length - 2];
-            if (result[result.length - 2].value === ']' || result[result.length - 2].value === '}') result[result.length - 1].value = '';
+            if (last.value === ']' || last.value === '}') last.value = '';
             return result;
         }
 </script>

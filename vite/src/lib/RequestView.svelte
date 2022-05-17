@@ -9,6 +9,8 @@
 </script>
 
 <script lang="ts">
+import ArrayExport from "./ArrayExport.svelte";
+
 	export let request: App.Request | undefined;
 	let response: Response | undefined;
 	let data: any;
@@ -84,24 +86,25 @@
 			body: JSON.stringify(request.bodyParam)
 		};
 		if (config.method === RequestMethods.GET) delete config.body;
-		//parsedUrl = parseUrl();
 		fetch(parsedUrl, config)
 			.then((r => {
 				response = r;
-				console.log({response});
-				//if (r.headers['Content-Type'] == RequestContentTypes.JSON) return r.json(); 
-				return r.json();
+				if (request.contentType == RequestContentTypes.JSON) return r.json(); 
+				return r.text();
 			}))
 			.then((d => {
 				data = d;
 				console.log({data});
 			}))
 			.catch(e => {
-				 error = e;
-				 console.log({error});
+				console.log({e});
+				error = e;
 			})
 			.finally(() => {
 				showResponse = true;
+				data = data;
+				response = response;
+				error = error;
 			});
 	}
 </script>
@@ -178,26 +181,36 @@
 				<Button on:click={submit} text="Submit" icon="play-line" variant="pri" />
 			</div>
 			{#if (showResponse)}
-				<div class="overflow-hidden">
-					<p class="label">Response</p>
-					<p class="label">{response?.status}</p>
-					<p class="label">{response?.statusText}</p>
-					<p class="label">{response?.type}</p>
-					<p class="label">{response?.url}</p>
-					<p class="label">{JSON.stringify(response?.headers)}</p>
-					<JsonView data={response}/>
-					<p class="label">Data</p>
-					<JsonView data={data}/>
-					{#if error}
-						<p class="label">Error</p>
-						<JsonView data={error}/>
-					{/if}
+				<div class="request-params">
+					<p class="label">Response Status</p>
+					<p class="status-{response?.status}">{response?.status}</p>
+					<main>
+						{#if Array.isArray(data)}
+						<div>
+							<p class="label">Response (Array-View)</p>
+							<ArrayExport data={data}/>
+						</div>
+						{:else if data}
+						<div>
+							<p class="label">Response</p>
+							<JsonView data={data}/>
+						</div>
+						{/if}
+						{#if error}
+							<div>
+								<p class="label">Error</p>
+								<JsonView data={error}/>
+							</div>
+						{/if}
+					</main>
 				</div>
-				<div class="flex space-x-4 justify-center items-center">
-					<p class="label">Export</p>
-					<Button on:click={download} icon="download-line" text="Download .json" variant="sec" />
-					<Button on:click={toClipboard} icon="clipboard-line" text="Copy Javascript" variant="sec" />
-				</div>
+				{#if data}
+					<div class="flex space-x-4 justify-center items-center">
+						<p class="label">Export</p>
+						<Button on:click={download} icon="download-line" text="Download .json" variant="sec" />
+						<Button on:click={toClipboard} icon="clipboard-line" text="Copy Javascript" variant="sec" />
+					</div>
+				{/if}
 			{/if}
 		{:else}
 			<div class="h-full flex justify-center items-center">

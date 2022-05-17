@@ -14,7 +14,7 @@ export enum RequestModes {
 
 export enum RequestContentTypes {
     JSON = 'application/json',
-    FORM = 'application/x-www-form-urlencoded'
+    TEXT = 'text/html; charset=UTF-8'
 }
 
 export enum RequestCredentials {

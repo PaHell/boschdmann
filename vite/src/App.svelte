@@ -2,8 +2,7 @@
 	import { onMount } from 'svelte';
 	import { RequestContentTypes, RequestCredentials, RequestMethods, RequestModes } from './enum';
   	import './assets/app.css';
-  	//import 'remixicon/fonts/remixicon.css'
-	import Button from './lib/Button.svelte';
+  	import 'remixicon/fonts/remixicon.css'
 	import List from './lib/List.svelte';
 	import Icon from './lib/Icon.svelte';
   	import RequestView from './lib/RequestView.svelte';
@@ -94,8 +93,8 @@
 				<Icon name="mail-send-fill"/>
 				<h1>Boschdmann</h1>
 			</header>
-			<List title="My Collection" items={requests} bind:active={selectedRequestIndex} on:change={onRequestViewChange} on:add={createRequest}>
-				<svelte:fragment let:item let:index>
+			<List title="My Collection" items={requests} bind:active={selectedRequestIndex} on:change={onRequestViewChange} on:add={createRequest} filter={(i) => i.name+i.method}>
+				<svelte:fragment let:item>
 					<div class="badge badge-{item.method.toLowerCase()}">
 						<p>{item.method}</p>
 					</div>
